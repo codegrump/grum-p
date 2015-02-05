@@ -11,14 +11,14 @@ cd ${SCRIPT_DIR}
 #run antlr against grump grammar
 pushd src/main/antlr
 rm -rf *.java *.tokens
-java -jar ${SCRIPT_DIR}/.antlr/*.jar GrumpP.g4
+java -jar ${SCRIPT_DIR}/.antlr/*.jar GrumP.g4
 
 #copy to src/main/java/grump with correct package
-for g in `ls GrumpP*java`
+for g in `ls GrumP*java`
 do
-new_g=../java/grumpp/${g}
-echo 'package grumpp;' > ${new_g}
+new_g=../java/grump/${g}
+echo 'package grump;' > ${new_g}
 cat ${g} >> ${new_g}
 done
 
-cp GrumpP.tokens ../java/grump
+cp GrumP.tokens ../java/grump

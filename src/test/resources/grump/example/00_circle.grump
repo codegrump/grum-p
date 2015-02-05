@@ -1,0 +1,42 @@
+define LineSegment extends Sketch {
+    constructor (Point p, Point q){
+            Point p := p;
+            Point q := q;
+    }
+    
+    constructor (Point p){
+        Point p := p;
+        Point q := Point();
+    }
+    
+    constructor FixedLength(parameter d){
+        Point p = Point();
+        Point q = Point();
+        
+        constraint distance(p, q) = d;
+    }
+    
+    constructor FixedLength(parameter p, Point p){
+        this.p := p;
+        this.q := Point();
+        
+        constraint distance(p, q) = d;
+    }
+}
+
+
+example SimpleLineSegments {
+    LineSegment pq := LineSegment(ORIGIN);
+    LineSegment qr := LineSegment(pq.q);
+    LineSegment rs := LineSegment(qr.r);
+
+    constraint rs.s = Point(3.0, 3.0);
+}
+
+example LineSegmentsFixedDistance {
+    constant parameter d := 5.0;
+    
+    LineSegment pq := LineSegment.FixedLength(d, ORIGIN);
+    LineSegment qr := LineSegment.FixedLength(d, pq.q);
+    LineSegment rs := LineSegment.FixedLength(d, qr.r);
+}

@@ -1,100 +1,105 @@
-grammar GrumpP;
+grammar GrumP;
 
 //statement containers
-grumpp : topLevelStatements? EOF;
+grump : topLevelStatements? EOF;
 
-defineBlock
-    : LBRACE statements? RBRACE
-    ;
-
-constructor
-    : CONSTRUCTOR parameters? LBRACE constructorStatments? RBRACE
-    ;
-
-//collections of statements
 topLevelStatements
     : topLevelStatement+
     ;
 
-statements
-    : statement+
-    ;
-    
-constructorStatments
-    : constructorStatement+
-    ;
-
-//individual statements
-statement
-    : constructor
-    | topLevelStatement
-    ;
-    
 topLevelStatement 
-    : defineStatement
-    | parameterStatement
-    | sketchStatement
-    | constraintStatement
+    : define
+    | example
     ;
 
-constructorStatement
-    : parameterStatement
-    | sketchStatement
-    | constraintStatement
+//define
+define
+    : DEFINE Symbol EXTENDS defineType defineBlock
     ;
 
-defineStatement
-    : DEFINE Symbol EXTENDS defineType defineBlock? SEMI
+defineType
+    : Symbol
+    | builtin
     ;
 
-constraintStatement 
-    : CONSTRAINT constraintAssignment ( COMMA constraintAssignment )*  SEMI
+defineBlock
+    : LBRACE defineStatements RBRACE
     ;
 
-sketchStatement
-    : sketchType sketchAssignment ( COMMA sketchAssignment )* SEMI
-    ;    
-    
+defineStatements
+    : constructor* ( parameterStatement | sketchStatement | constraintStatement )*
+    ;
+
+//constructor
+constructor
+    : CONSTRUCTOR Symbol? parameters LBRACE constructorStatments RBRACE
+    ;
+
+constructorStatments
+    : ( parameterStatement | sketchStatement | constraintStatement )*
+    ;
+
+//example
+example
+    : EXAMPLE (Symbol)? LBRACE exampleStatements RBRACE
+    ;
+
+exampleStatements
+    : ( parameterStatement | sketchStatement | constraintStatement )*
+    ;
+
+//parameter
 parameterStatement
     : CONSTANT? PARAMETER parameterAssignment ( COMMA parameterAssignment )* SEMI
-    ;    
+    ; 
 
-//assignments
-   
-constraintAssignment
-    : (Symbol ASSIGN)? anonymousConstraint
+parameterAssignment
+    : Symbol ASSIGN expression
     ;
-    
-anonymousConstraint
-    : constraintExpression EQUALS constraintExpression
-    ;
+
+//sketch
+sketchStatement
+    : sketchType sketchAssignment ( COMMA sketchAssignment )* SEMI
+    ; 
 
 sketchAssignment
-    : Symbol (ASSIGN Symbol arguments? defineBlock?)?
+    : Symbol ASSIGN sketchConstruction defineBlock?
+    | Symbol ASSIGN Symbol
+    ;
+
+sketchConstruction
+    : sketchType (DOT Symbol)? arguments
+    ;
+
+sketchType
+    : Symbol
+    | builtin
+    ;
+
+//constraint
+constraintStatement 
+    : CONSTRAINT constraint ( COMMA constraint )*  SEMI
     ;
     
-parameterAssignment
-    : Symbol (ASSIGN expression)?
-    ;
-  
-//collections of expressions
-arguments
-    : LPAREN expressions ? RPAREN
+constraint
+    : constraintExpression (EQUALS constraintExpression)+
     ;
 
-expressions
-    : expression ( COMMA expression )*
-    ;
-
-//individual expressions
 constraintExpression
     : expression
     | DISTANCE LPAREN expression COMMA expression RPAREN
     ;
 
+//arguments
+arguments
+    : LPAREN (expression ( COMMA expression )*)? RPAREN
+    ;
+
+//expressions
 expression
     : constant
     | reference
+    | sketchConstruction
     | LPAREN expression RPAREN
     | expression ( ADD | SUB ) expression
     | expression ( MUL | DIV ) expression
@@ -110,22 +115,12 @@ parameter
     : parameterType Symbol
     ;
 
-//types
-defineType
-    : Symbol
-    | builtin
-    ; 
-
 parameterType
     : PARAMETER
     | sketchType
     ;
 
-sketchType
-    : Symbol
-    | builtin
-    ;
-
+//etc
 builtin
     : SKETCH
     | POINT
@@ -140,14 +135,12 @@ constant
 
 reference
     : Symbol ( DOT Symbol )*
+    | THIS (DOT Symbol)*
     ;
 
-symbols
-    : Symbol ( COMMA Symbol )*
-    ;
-    
+THIS            : 'this';
 
-
+EXAMPLE         : 'example';
 SKETCH          : 'Sketch';
 POINT           : 'Point';
 
@@ -403,6 +396,10 @@ ADD             : '+';
 SUB             : '-';
 MUL             : '*';
 DIV             : '/';
+
+symbols
+    : Symbol ( COMMA Symbol )*
+    ;
 
 Symbol : LETTER LETTER_OR_NUMBER* ;
 
